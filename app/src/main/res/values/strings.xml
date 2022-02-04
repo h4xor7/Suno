@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Suno</string>
+    <string name="search_hint">Enter podcast search</string>
+    <string name="search">Search</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="ok_button">Ok</string>
+
+</resources>
