@@ -2,31 +2,39 @@ package com.pandey.suno.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.pandey.suno.model.Episode
 import com.pandey.suno.model.Podcast
 import com.pandey.suno.repository.PodcastRepo
+import kotlinx.coroutines.launch
 import java.util.*
 
 class PodcastViewModel(application: Application) :
     AndroidViewModel(application) {
+
+    private val _podcastLiveData = MutableLiveData<PodcastViewData?>()
+    val podcastLiveData: LiveData<PodcastViewData?> =
+        _podcastLiveData
+
     var podcastRepo: PodcastRepo? = null
     var activePodcastViewData: PodcastViewData? = null
 
-
-    fun getPodcast(podcastSummaryViewData:
-                   SearchViewModel.PodcastSummaryViewData
-    ): PodcastViewData? {
-
-        val repo = podcastRepo ?: return null
-        val feedUrl = podcastSummaryViewData.feedUrl ?: return null
-        val podcast = repo.getPodcast(feedUrl)
-        podcast?.let {
-            it.feedTitle = podcastSummaryViewData.name ?: ""
-            it.imageUrl = podcastSummaryViewData.imageUrl ?: ""
-            activePodcastViewData = podcastToPodcastView(it)
-            return activePodcastViewData
+    fun getPodcast(podcastSummaryViewData: SearchViewModel.PodcastSummaryViewData) {
+        podcastSummaryViewData.feedUrl?.let { url ->
+            viewModelScope.launch {
+                podcastRepo?.getPodcast(url)?.let {
+                    it.feedTitle = podcastSummaryViewData.name ?: ""
+                    it.imageUrl = podcastSummaryViewData.imageUrl ?: ""
+                    _podcastLiveData.value = podcastToPodcastView(it)
+                } ?: run {
+                    _podcastLiveData.value = null
+                }
+            }
+        } ?: run {
+            _podcastLiveData.value = null
         }
-        return null
     }
 
 
