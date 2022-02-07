@@ -139,7 +139,7 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
 
         val dividerItemDecoration = DividerItemDecoration(databinding.podcastRecyclerView.context,
             layoutManager.orientation)
-        databinding.podcastRecyclerView.addItemDecoration(dividerItemDecoration)
+       // databinding.podcastRecyclerView.addItemDecoration(dividerItemDecoration)
 
         podcastListAdapter = PodcastListAdapter(null, this, this)
         databinding.podcastRecyclerView.adapter = podcastListAdapter
@@ -178,7 +178,8 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
 
     private fun showError(message: String) {
         AlertDialog.Builder(this).setMessage(message).setPositiveButton(getString(R.string.ok_button),
-            null).create().show()
+            null)
+            .create().show()
     }
 
     companion object {

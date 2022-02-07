@@ -5,36 +5,30 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:minHeight="99dp"
+    android:minHeight="79dp"
     android:paddingLeft="5dp"
     android:id="@+id/searchItem"
     app:enable_preview="true"
-    >
+    android:background="#1F1F1F">
 
     <com.thelumiereguy.neumorphicview.views.NeumorphicCardView
         android:id="@+id/neumorphicCardView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/neu_card_background"
-        android:padding="10dp"
-        app:cardRadius="34"
-        app:shadowRadius="4dp"
-        app:highlightRadius="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#202427"
+        android:padding="24dp"
+        app:cardRadius="2"
+        app:highlightColor="#171A1B"
+        app:highlightDx="-4dp"
+        app:highlightDy="-4dp"
+        app:highlightRadius="12dp"
         app:enableHighlight="true"
         app:enableShadow="true"
-        app:highlightDx="4dp"
-        app:highlightDy="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:neu_backgroundColor="@color/neu_card_background_color"
-        app:shadowColor="@color/neu_shadow_color"
-        app:highlightColor="@color/neu_highlight_color"
-        app:shadowDx="-4dp"
-        app:shadowDy="-4dp"
-       >
-
+        app:neu_backgroundColor="#202427"
+        app:shadowColor="#313335"
+        app:shadowDx="4dp"
+        app:shadowDy="4dp"
+        app:shadowRadius="8dp">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -43,41 +37,41 @@
                 android:id="@+id/podcastImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginStart="5dp"
                 android:layout_marginBottom="9dp"
+                android:layout_marginStart="5dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitStart"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
             <TextView
                 android:id="@+id/podcastNameTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:textSize="14sp"
+                android:layout_marginStart="8dp"
                 android:textStyle="bold"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/podcastImage"
-                app:layout_constraintTop_toTopOf="@id/podcastImage"
-                app:layout_constraintBottom_toTopOf="@id/podcastLastUpdatedTextView"
-                tools:text="Name" />
-
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Name"
+                android:textColor="@color/white"
+                />
             <TextView
                 android:id="@+id/podcastLastUpdatedTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/podcastImage"
                 app:layout_constraintTop_toBottomOf="@+id/podcastNameTextView"
-                tools:text="Last updated" />
+                tools:text="Last updated"
+                android:textColor="@color/white"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

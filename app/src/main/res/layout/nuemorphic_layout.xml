@@ -89,19 +89,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#202427"
-                android:padding="24dp"
-                app:cardRadius="72"
                 app:highlightColor="#171A1B"
                 app:highlightDx="-4dp"
                 app:highlightDy="-4dp"
                 app:highlightRadius="12dp"
+                app:shadowRadius="8dp"
+                app:cardRadius="72"
+                android:padding="24dp"
                 app:enableHighlight="true"
                 app:enableShadow="true"
                 app:neu_backgroundColor="#202427"
                 app:shadowColor="#313335"
                 app:shadowDx="4dp"
                 app:shadowDy="4dp"
-                app:shadowRadius="8dp">
+               >
 
                 <com.thelumiereguy.neumorphicview.views.NeumorphicConstraintLayout
                     android:layout_width="match_parent"

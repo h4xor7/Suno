@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="neu_shadow_color">#313335</color>
+    <color name="neu_highlight_color">#000000</color>
+    <color name="neu_card_background">#202427</color>
+    <color name="neu_card_background_color">#1F1F1F</color>
+    <color name ="action_bar_color">#202427</color>
+
+
+</resources>
