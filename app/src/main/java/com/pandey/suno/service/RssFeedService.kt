@@ -16,7 +16,6 @@ import retrofit2.http.Headers
 import retrofit2.http.Url
 import java.util.concurrent.TimeUnit
 import javax.xml.parsers.DocumentBuilderFactory
-
 class RssFeedService private constructor() {
 
     suspend fun getFeed(xmlFileURL: String): RssFeedResponse? {
