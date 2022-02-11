@@ -30,7 +30,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapterListener {
+class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapterListener,PodcastDetailsFragment.OnPodcastDetailsListener {
     private val searchViewModel by viewModels<SearchViewModel>()
     private val podcastViewModel by viewModels<PodcastViewModel>()
     private lateinit var podcastListAdapter: PodcastListAdapter
@@ -44,6 +44,7 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         setupToolbar()
         setupViewModels()
         updateControls()
+        setupPodcastListView()
         createSubscription()
         handleIntent(intent)
         addBackStackListener()
@@ -55,6 +56,9 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
 
         searchMenuItem = menu.findItem(R.id.search_item)
         val searchView = searchMenuItem.actionView as SearchView
+
+
+
 
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
@@ -120,7 +124,7 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
     private fun setupViewModels() {
         val service = ItunesService.instance
         searchViewModel.iTunesRepo = ItunesRepo(service)
-        podcastViewModel.podcastRepo = PodcastRepo(RssFeedService.instance)
+        podcastViewModel.podcastRepo = PodcastRepo(RssFeedService.instance,podcastViewModel.podcastDao)
     }
 
     private fun addBackStackListener() {
@@ -184,5 +188,35 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
     companion object {
         private const val TAG_DETAILS_FRAGMENT = "DetailsFragment"
     }
+
+    override fun onSubscribe() {
+        podcastViewModel.saveActivePodcast()
+        supportFragmentManager.popBackStack()
+
+    }
+
+    override fun onUnsubscribe() {
+        podcastViewModel.deleteActivePodcast()
+        supportFragmentManager.popBackStack()
+    }
+
+
+    private fun showSubscribedPodcasts()
+    {
+        val podcasts = podcastViewModel.getPodcasts()?.value
+        if (podcasts != null) {
+            databinding.toolbar.title = getString(R.string.subscribed_podcasts)
+            podcastListAdapter.setSearchData(podcasts)
+        }
+    }
+
+    private fun setupPodcastListView() {
+        podcastViewModel.getPodcasts()?.observe(this, Observer {
+            if (it != null) {
+                showSubscribedPodcasts()
+            }
+        })
+    }
+
 }
 
