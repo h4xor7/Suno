@@ -28,4 +28,7 @@ interface PodcastDao {
 
     @Delete
     suspend fun deletePodcast(podcast: Podcast)
+
+    @Query("SELECT * FROM Podcast ORDER BY FeedTitle")
+    fun loadPodcastsStatic(): List<Podcast>
 }

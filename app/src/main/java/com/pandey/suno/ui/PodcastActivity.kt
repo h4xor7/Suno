@@ -13,8 +13,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
 import com.pandey.suno.R
 import com.pandey.suno.adapter.PodcastListAdapter
 import com.pandey.suno.databinding.ActivityPodcastBinding
@@ -25,12 +27,16 @@ import com.pandey.suno.service.ItunesService
 import com.pandey.suno.service.RssFeedService
 import com.pandey.suno.viewmodel.PodcastViewModel
 import com.pandey.suno.viewmodel.SearchViewModel
+import com.pandey.suno.worker.EpisodeUpdateWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
-class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapterListener,PodcastDetailsFragment.OnPodcastDetailsListener {
+class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapterListener,
+    PodcastDetailsFragment.OnPodcastDetailsListener {
+
     private val searchViewModel by viewModels<SearchViewModel>()
     private val podcastViewModel by viewModels<PodcastViewModel>()
     private lateinit var podcastListAdapter: PodcastListAdapter
@@ -45,9 +51,10 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         setupViewModels()
         updateControls()
         setupPodcastListView()
-        createSubscription()
         handleIntent(intent)
         addBackStackListener()
+        scheduleJobs()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -57,8 +64,16 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         searchMenuItem = menu.findItem(R.id.search_item)
         val searchView = searchMenuItem.actionView as SearchView
 
+        searchMenuItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+                return true
+            }
 
-
+            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+                showSubscribedPodcasts()
+                return true
+            }
+        })
 
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
@@ -80,21 +95,22 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         handleIntent(intent)
     }
 
-    private fun createSubscription() {
-        podcastViewModel.podcastLiveData.observe(this, Observer {
+    override fun onShowDetails(podcastSummaryViewData: SearchViewModel.PodcastSummaryViewData) {
+        podcastSummaryViewData.feedUrl ?: return
+        showProgressBar()
+        podcastViewModel.viewModelScope.launch (context = Dispatchers.Main) {
+            podcastViewModel.getPodcast(podcastSummaryViewData)
             hideProgressBar()
-            if (it != null) {
-                showDetailsFragment()
-            } else {
-                showError("Error loading feed")
-            }
-        })
+            showDetailsFragment()
+        }
     }
 
-    override fun onShowDetails(podcastSummaryViewData: SearchViewModel.PodcastSummaryViewData) {
-        podcastSummaryViewData.feedUrl?.let {
-            showProgressBar()
-            podcastViewModel.getPodcast(podcastSummaryViewData)
+    private fun showSubscribedPodcasts() {
+        val podcasts = podcastViewModel.getPodcasts()?.value
+
+        if (podcasts != null) {
+            databinding.toolbar.title = getString(R.string.subscribed_podcasts)
+            podcastListAdapter.setSearchData(podcasts)
         }
     }
 
@@ -115,7 +131,19 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
             val query = intent.getStringExtra(SearchManager.QUERY) ?: return
             performSearch(query)
         }
+
+
+        val podcastFeedUrl = intent.getStringExtra(EpisodeUpdateWorker.EXTRA_FEED_URL)
+        if (podcastFeedUrl != null) {
+            podcastViewModel.viewModelScope.launch {
+                val podcastSummaryViewData =
+                    podcastViewModel.setActivePodcast(podcastFeedUrl)
+                podcastSummaryViewData?.let { podcastSummaryView ->
+                    onShowDetails(podcastSummaryView) }
+            }
+        }
     }
+
 
     private fun setupToolbar() {
         setSupportActionBar(databinding.toolbar)
@@ -124,7 +152,16 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
     private fun setupViewModels() {
         val service = ItunesService.instance
         searchViewModel.iTunesRepo = ItunesRepo(service)
-        podcastViewModel.podcastRepo = PodcastRepo(RssFeedService.instance,podcastViewModel.podcastDao)
+        val rssService = RssFeedService.instance
+        podcastViewModel.podcastRepo = PodcastRepo(rssService, podcastViewModel.podcastDao)
+    }
+
+    private fun setupPodcastListView() {
+        podcastViewModel.getPodcasts()?.observe(this, Observer {
+            if (it != null) {
+                showSubscribedPodcasts()
+            }
+        })
     }
 
     private fun addBackStackListener() {
@@ -153,11 +190,8 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
     private fun showDetailsFragment() {
         val podcastDetailsFragment = createPodcastDetailsFragment()
 
-        supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.podcastDetailsContainer, podcastDetailsFragment, TAG_DETAILS_FRAGMENT)
-            .addToBackStack("DetailsFragment")
-            .commit()
+        supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
+            podcastDetailsFragment, TAG_DETAILS_FRAGMENT).addToBackStack("DetailsFragment").commit()
         databinding.podcastRecyclerView.visibility = View.INVISIBLE
         searchMenuItem.isVisible = false
     }
@@ -180,19 +214,11 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         databinding.progressBar.visibility = View.INVISIBLE
     }
 
-    private fun showError(message: String) {
-        AlertDialog.Builder(this).setMessage(message).setPositiveButton(getString(R.string.ok_button),
-            null).create().show()
-    }
 
-    companion object {
-        private const val TAG_DETAILS_FRAGMENT = "DetailsFragment"
-    }
 
     override fun onSubscribe() {
         podcastViewModel.saveActivePodcast()
         supportFragmentManager.popBackStack()
-
     }
 
     override fun onUnsubscribe() {
@@ -200,23 +226,24 @@ class PodcastActivity : AppCompatActivity(), PodcastListAdapter.PodcastListAdapt
         supportFragmentManager.popBackStack()
     }
 
+    private fun scheduleJobs() {
+        val constraints: Constraints = Constraints.Builder().apply {
+            setRequiredNetworkType(NetworkType.CONNECTED)
+            setRequiresCharging(true)
+        }.build()
 
-    private fun showSubscribedPodcasts()
-    {
-        val podcasts = podcastViewModel.getPodcasts()?.value
-        if (podcasts != null) {
-            databinding.toolbar.title = getString(R.string.subscribed_podcasts)
-            podcastListAdapter.setSearchData(podcasts)
-        }
+        val request = PeriodicWorkRequestBuilder<EpisodeUpdateWorker>(
+            1, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            TAG_EPISODE_UPDATE_JOB,
+            ExistingPeriodicWorkPolicy.REPLACE, request)
     }
 
-    private fun setupPodcastListView() {
-        podcastViewModel.getPodcasts()?.observe(this, Observer {
-            if (it != null) {
-                showSubscribedPodcasts()
-            }
-        })
+    companion object {
+        private const val TAG_DETAILS_FRAGMENT = "DetailsFragment"
+        private const val TAG_EPISODE_UPDATE_JOB = "com.pandey.suno.episodes"
     }
-
 }
-
