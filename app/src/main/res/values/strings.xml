@@ -13,4 +13,10 @@
     <string name="pause">Pause</string>
     <string name="play">Play</string>
 
+    <string name="episode_thumbnail">episode thumbnail</string>
+    <string name="replay_button">replay button</string>
+    <string name="skip_forward">skip forward</string>
+    <string name="_1x">1x</string>
+    <string name="_0_00">0:00</string>
+
 </resources>
