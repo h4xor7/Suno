@@ -75,6 +75,10 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:2.5.0"
     implementation "androidx.media:media:1.2.1"
 
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    implementation 'com.github.captain-miao:optroundcardview:1.0.0'
+
 
 
 

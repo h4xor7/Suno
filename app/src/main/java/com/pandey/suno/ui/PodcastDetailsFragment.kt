@@ -24,13 +24,12 @@ import com.pandey.suno.databinding.FragmentPodcastDetailsBinding
 import com.pandey.suno.service.SunoMediaService
 import com.pandey.suno.viewmodel.PodcastViewModel
 
-class PodcastDetailsFragment : Fragment(),EpisodeListAdapter.EpisodeListAdapterListener {
+class PodcastDetailsFragment : Fragment(), EpisodeListAdapter.EpisodeListAdapterListener {
 
     private val podcastViewModel: PodcastViewModel by activityViewModels()
     private lateinit var databinding: FragmentPodcastDetailsBinding
     private lateinit var episodeListAdapter: EpisodeListAdapter
     private var listener: OnPodcastDetailsListener? = null
-
 
 
     companion object {
@@ -78,10 +77,12 @@ class PodcastDetailsFragment : Fragment(),EpisodeListAdapter.EpisodeListAdapterL
                     databinding.episodeRecyclerView.context, layoutManager.orientation
                 )
                 databinding.episodeRecyclerView.addItemDecoration(dividerItemDecoration)
-                episodeListAdapter = EpisodeListAdapter(viewData.episodes,this)
+                episodeListAdapter = EpisodeListAdapter(viewData.episodes, this)
                 databinding.episodeRecyclerView.adapter = episodeListAdapter
             }
         })
+
+        subscriptionToggle()
     }
 
     override fun onAttach(context: Context) {
@@ -96,37 +97,10 @@ class PodcastDetailsFragment : Fragment(),EpisodeListAdapter.EpisodeListAdapterL
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_details, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.menu_feed_action -> {
-                if (item.title == getString(R.string.unsubscribe)) {
-                    listener?.onUnsubscribe()
-                } else {
-                    listener?.onSubscribe()
-                }
-                true
-            }
-            else ->
-                super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        podcastViewModel.podcastLiveData.observe(viewLifecycleOwner, Observer { podcast ->
-            if (podcast != null) {
-                menu.findItem(R.id.menu_feed_action).title = if (podcast.subscribed)
-                    getString(R.string.unsubscribe) else getString(R.string.subscribe)
-            }
-        })
-        super.onPrepareOptionsMenu(menu)
-    }
 
 
+
+   
 
     override fun onStart() {
         super.onStart()
@@ -148,10 +122,6 @@ class PodcastDetailsFragment : Fragment(),EpisodeListAdapter.EpisodeListAdapterL
     }
 
 
-
-
-
-
     interface OnPodcastDetailsListener {
         fun onSubscribe()
         fun onUnsubscribe()
@@ -159,22 +129,51 @@ class PodcastDetailsFragment : Fragment(),EpisodeListAdapter.EpisodeListAdapterL
     }
 
     override fun onSelectedEpisode(episodeViewData: PodcastViewModel.EpisodeViewData) {
-       /* val fragmentActivity = activity as FragmentActivity
-        val controller = MediaControllerCompat.getMediaController(fragmentActivity)
-        if (controller.playbackState != null) {
-            if (controller.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
-                controller.transportControls.pause()
-            } else {
-                startPlaying(episodeViewData)
-            }
-        } else {
-            startPlaying(episodeViewData)
-        }
-        */
-
-
+        /* val fragmentActivity = activity as FragmentActivity
+         val controller = MediaControllerCompat.getMediaController(fragmentActivity)
+         if (controller.playbackState != null) {
+             if (controller.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
+                 controller.transportControls.pause()
+             } else {
+                 startPlaying(episodeViewData)
+             }
+         } else {
+             startPlaying(episodeViewData)
+         }
+         */
         listener?.onShowEpisodePlayer(episodeViewData)
 
 
     }
+
+
+    private fun subscriptionToggle(){
+        podcastViewModel.podcastLiveData.observe(viewLifecycleOwner, Observer { podcast ->
+            if (podcast != null) {
+
+                val textValue = if (podcast.subscribed) {
+                    getString(R.string.unsubscribe)
+                } else {
+                    getString(R.string.subscribe)
+
+                }
+                databinding.subscribeButton.text = textValue
+            }
+        })
+
+        databinding.subscribeButton.setOnClickListener {
+
+            if (databinding.subscribeButton.text == getString(R.string.unsubscribe)) {
+                listener?.onUnsubscribe()
+            } else {
+                listener?.onSubscribe()
+            }
+        }
+
+
+
+    }
+
+
+
 }
