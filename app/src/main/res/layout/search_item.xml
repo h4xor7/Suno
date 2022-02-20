@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,17 +10,32 @@
     android:paddingBottom="10dp"
     android:paddingLeft="5dp"
     android:paddingRight="5dp">
-    <ImageView
-        android:id="@+id/podcastImage"
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/podcastImageCard"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        app:cardCornerRadius="6dp"
+        android:layout_margin="5dp"
         android:layout_marginBottom="9dp"
         android:layout_marginStart="5dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitStart"
+        android:elevation="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+    <ImageView
+        android:id="@+id/podcastImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        tools:src="@drawable/ic_baseline_looks_one_24"
+        android:scaleType="fitStart"
+       />
+
+    </androidx.cardview.widget.CardView>
+
     <TextView
         android:id="@+id/podcastNameTextView"
         android:layout_width="0dp"
@@ -28,8 +44,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:textStyle="bold"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/podcastImage"
+        app:layout_constraintStart_toEndOf="@+id/podcastImageCard"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Name" />
     <TextView
@@ -39,9 +56,10 @@
         android:layout_gravity="top"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/podcastImage"
+        app:layout_constraintStart_toEndOf="@+id/podcastImageCard"
         app:layout_constraintTop_toBottomOf="@+id/podcastNameTextView"
         tools:text="Last updated" />
 </androidx.constraintlayout.widget.ConstraintLayout>
