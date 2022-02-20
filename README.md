@@ -11,6 +11,7 @@ This is a podcast application using Media Player
 
 ***You can Install and test latest Suno app from below 👇***
 
+[![Logo](https://img.shields.io/badge/Suno-APK-orange)](https://github.com/h4xor7/Suno/releases/download/v1.0.0-alpha/app-debug.apk)
 
 
 ### Features
